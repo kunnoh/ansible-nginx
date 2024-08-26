@@ -1,0 +1,76 @@
+- hosts: WariloWebServer
+  become: yes
+
+  vars:
+    certbot_email: "{{ email }}"
+    site_domain: "{{ domain_name }}"
+
+  tasks:
+    # - name: Update and upgrade server
+    #   apt:
+    #     update_cache: yes
+    #     upgrade: yes
+
+    - name: Check Nginx and Certbot are installed
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - nginx
+        - certbot
+        - python3-certbot-nginx
+
+    - name: Create {{ site_domain }} directory
+      file:
+        path: /var/www/{{ site_domain }}
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+        
+    - name: Add {{ site_domain }} HTML
+      copy:
+        content: |
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>{{ site_domain }}</title>
+            </head>
+            <body>
+              <h1>
+                Welcome to {{ site_domain }}
+              </h1>
+            </body>
+          </html>
+        dest: /var/www/{{ site_domain }}/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    - name: Create {{ site_domain }} SSL certificate with Certbot
+      command: certbot certonly --nginx -d {{ site_domain }} --email {{ certbot_email }} --agree-tos --non-interactive
+
+    - name: Nginx config for the {{ site_domain }} domain
+      template:
+        src: nginxSite.j2
+        dest: /etc/nginx/sites-available/{{ site_domain }}
+
+    - name: Enable {{ site_domain }}
+      file:
+        src: /etc/nginx/sites-available/{{ site_domain }}
+        dest: /etc/nginx/sites-enabled/{{ site_domain }}
+        state: link
+
+    - name: Test Nginx configuration
+      command: nginx -t
+      when: not (ansible_local['letsencrypt']['certs'][site_domain] is defined)
+      notify: reload nginx
+
+  handlers:
+
+    - name: reload nginx
+      service:
+        name: nginx
+        state: reloaded

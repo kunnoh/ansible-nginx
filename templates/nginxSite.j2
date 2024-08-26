@@ -1,0 +1,36 @@
+server {
+    listen 80;
+    listen [::]:80;
+    
+    server_name {{ site_domain }};
+ 
+    # Redirect http to https
+    if ($host = {{ site_domain }}) {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    
+    server_name {{ site_domain }};
+
+    ssl_certificate /etc/letsencrypt/live/{{ site_domain }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ site_domain }}/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+
+    root /var/www/{{ site_domain }};
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # SSL hardening (more secure settings)
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+}
