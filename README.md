@@ -16,10 +16,10 @@ ansible --version
 
 Clone the code.
 ```sh
-git clone https://'<username>'@bitbucket.org/warilo/ansible-webserver.git
+git clone https://github.com/kunnoh/ansible-nginx.git
 ```
 
-Move to `ansible-webserver` directory.
+Move to `ansible-nginx` directory.
 
 
 **Set variables**

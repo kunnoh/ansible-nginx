@@ -1,4 +1,4 @@
-- hosts: WariloWebServer
+- hosts: MyWebServer
   become: yes
 
   vars:
@@ -6,10 +6,10 @@
     site_domain: "{{ domain_name }}"
 
   tasks:
-    # - name: Update and upgrade server
-    #   apt:
-    #     update_cache: yes
-    #     upgrade: yes
+    - name: Update and upgrade server
+      apt:
+        update_cache: yes
+        upgrade: yes
 
     - name: Check Nginx and Certbot are installed
       apt:
