@@ -1,5 +1,5 @@
 - hosts: MyWebServer
-  become: yes
+  become: true
 
   vars:
     certbot_email: "{{ email }}"
