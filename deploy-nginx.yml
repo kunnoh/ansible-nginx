@@ -1,4 +1,4 @@
-- hosts: MyWebServer
+- hosts: WebServer
   become: true
 
   vars:
@@ -49,13 +49,13 @@
         group: www-data
         mode: '0644'
 
-    - name: Create {{ site_domain }} SSL certificate with Certbot
-      command: certbot certonly --nginx -d {{ site_domain }} --email {{ certbot_email }} --agree-tos --non-interactive
-
     - name: Nginx config for the {{ site_domain }} domain
       template:
         src: nginxSite.j2
         dest: /etc/nginx/sites-available/{{ site_domain }}
+        owner: www-data
+        group: www-data
+        mode: '0644'
 
     - name: Enable {{ site_domain }}
       file:
@@ -63,13 +63,13 @@
         dest: /etc/nginx/sites-enabled/{{ site_domain }}
         state: link
 
-    - name: Test Nginx configuration
-      command: nginx -t
-      when: not (ansible_local['letsencrypt']['certs'][site_domain] is defined)
-      notify: reload nginx
+    - name: Test and reload Nginx configuration
+      command: nginx -t && nginx -s reload
+
+    - name: Create {{ site_domain }} SSL certificate with Certbot
+      command: certbot --nginx -d {{ site_domain }} --email {{ certbot_email }} --agree-tos --non-interactive
 
   handlers:
-
     - name: reload nginx
       service:
         name: nginx

@@ -1,34 +1,11 @@
 server {
     listen 80;
     listen [::]:80;
-    
-    server_name {{ site_domain }};
- 
-    # Redirect http to https
-    if ($host = {{ site_domain }}) {
-        return 301 https://$host$request_uri;
-    }
-}
-
-server {
-    listen ssl 443;
-    listen 443 ssl http2;
-    listen ssl [::]:443;
-    listen [::]:443 ssl http2;
 
     server_name {{ site_domain }};
 
-    # SSL Configuration
-    ssl_certificate /etc/letsencrypt/live/{{ site_domain }}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/{{ site_domain }}/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-
-    # SSL hardening (more secure settings)
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
-
+    root /var/www/{{ site_domain }};
+    index index.html;
 
     # Security Headers
     add_header X-Content-Type-Options nosniff;
@@ -37,20 +14,17 @@ server {
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     add_header Content-Security-Policy "default-src 'self';";
 
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
     # Cache-Control Headers for static assets
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
         expires max;
         add_header Cache-Control "public";
     }
 
-    root /var/www/{{ site_domain }};
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
     # Logging specific to the site
-    access_log /var/log/nginx/{{ site_domain }}_access.log main;
+    access_log /var/log/nginx/{{ site_domain }}_access.log combined;
     error_log /var/log/nginx/{{ site_domain }}_error.log warn;
 }

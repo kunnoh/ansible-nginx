@@ -63,3 +63,4 @@ This will install nginx, certbot and configure nginx and add ssl to domain provi
 ## References
 1. [Ansible docs](https://docs.ansible.com/ansible-core/2.17/getting_started/index.html)
 2. [Nginx docs](https://nginx.org/en/docs/)
+3. [Certbot](https://eff-certbot.readthedocs.io/en/latest/)
