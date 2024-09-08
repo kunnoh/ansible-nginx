@@ -64,7 +64,8 @@
         state: link
 
     - name: Test and reload Nginx configuration
-      command: nginx -t && nginx -s reload
+      shell: |
+        nginx -t && nginx -s reload
 
     - name: Create {{ site_domain }} SSL certificate with Certbot
       command: certbot --nginx -d {{ site_domain }} --email {{ certbot_email }} --agree-tos --non-interactive
