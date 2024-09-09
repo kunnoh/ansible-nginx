@@ -67,8 +67,14 @@
       shell: |
         nginx -t && nginx -s reload
 
+    - name: Check if SSL exists
+      stat:
+        path: "/etc/letsencrypt/live/{{ site_domain }}"
+      register: certCheck
+
     - name: Create {{ site_domain }} SSL certificate with Certbot
       command: certbot --nginx -d {{ site_domain }} --email {{ certbot_email }} --agree-tos --non-interactive
+      when: certCheck.stat.exists == false
 
   handlers:
     - name: reload nginx
