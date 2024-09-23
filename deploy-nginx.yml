@@ -12,7 +12,7 @@
         update_cache: yes
         upgrade: yes
 
-    - name: Check Nginx and Certbot are installed
+    - name: Nginx and Certbot installation
       apt:
         name: "{{ item }}"
         state: present
